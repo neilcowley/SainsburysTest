@@ -16,9 +16,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 public class ScrapeData {
-	
+
 	public String run(String source_url) {
 		
 		String json = ""; 
@@ -119,7 +120,7 @@ public class ScrapeData {
         dataset.addProperty("vat",vat); 
         results.add("total", dataset);
         
-        // Generate the JSON Object 
+        // Generate the JSON Object and return as string
         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().serializeNulls().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
         return gson.toJson(results);		
 	}
