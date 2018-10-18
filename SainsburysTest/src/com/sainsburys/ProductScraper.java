@@ -16,17 +16,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 
-public class ScrapeData {
 
-	public String run(String source_url) {
-		
-		String json = ""; 
+public class ProductScraper {
+
+	public List<Product> run(String source_url) {
+
 		Document document;
 		Document productPage; 
-		BigDecimal gross = new BigDecimal("0"); 
-		BigDecimal vat = new BigDecimal("0"); 
 		List<Product> productList = new ArrayList<>();
 		
 		try {
@@ -67,61 +64,22 @@ public class ScrapeData {
 					pKcal_per_100g= cals.text();
 				}
 				
-				// Create a new immutable product
-				Product product = new Product(pTitle,pUnit_price,pKcal_per_100g,pDesc);
+				// Create a new immutable product pTitle,pUnit_price,pKcal_per_100g,pDesc
+				Product product = new ProductBuilder()
+						.title(pTitle)
+						.description(pDesc)
+						.kcal_per_100gStr(pKcal_per_100g)
+						.unit_priceStr(pUnit_price)
+						.build();
 				productList.add(product);
-				// Calculate the gross amount
-				gross = gross.add(product.getUnit_price());	
 			}
 			
-			// Calculate the VAT on the total gross amount 
-			vat = gross.multiply(new BigDecimal("0.2")).setScale(2, RoundingMode.CEILING);
-			// Return a JSON string
-			json = convertToJSON(productList, gross, vat);
-					
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		return json;
+		return productList; 
 	}
 	
-	/**
-	 * Converts the passed in list of products, gross and VAT into the required JSON output
-	 * @param productList
-	 * @param gross
-	 * @param vat
-	 * @return
-	 */
-	private String convertToJSON(List<Product> productList, BigDecimal gross, BigDecimal vat) {
-		
-		// Create a new JsonArray to store all the products in
-		JsonArray datasets = new JsonArray();
-		// Loop through the productList creating a dataSet for each product before adding it to the dataSets
-        for(Product prod : productList) {     
-        	JsonObject dataset = new JsonObject();
-  	        dataset.addProperty("title", prod.getTitle());
-  	        if(prod.getKcal_per_100g() > 0) {
-  	        	dataset.addProperty("kcal_per_100g", prod.getKcal_per_100g());
-  	        }
-  	        dataset.addProperty("unit_price", prod.getUnit_price());
-  	        dataset.addProperty("description", prod.getDescription());
-  	        datasets.add(dataset);
-        }
-      
-        // Create the results object to store products and totals
-        JsonObject results = new JsonObject();
-        // add all of the products to it
-        results.add("result", datasets);
-       
-        // generate the gross and vat elements
-        JsonObject dataset = new JsonObject();
-        dataset.addProperty("gross",gross); 
-        dataset.addProperty("vat",vat); 
-        results.add("total", dataset);
-        
-        // Generate the JSON Object and return as string
-        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().serializeNulls().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
-        return gson.toJson(results);		
-	}
+	
 }

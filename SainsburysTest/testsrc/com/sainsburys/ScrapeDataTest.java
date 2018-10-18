@@ -2,6 +2,8 @@ package com.sainsburys;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,11 +15,11 @@ import com.google.gson.JsonParser;
 
 public class ScrapeDataTest {
 	
-	private ScrapeData classUnderTest ; 
+	private ProductScraper classUnderTest ; 
 	
 	@Before
 	public void setUp() throws Exception{
-		classUnderTest = new ScrapeData();
+		classUnderTest = new ProductScraper();
 	}
 	
 	@Test
@@ -29,7 +31,10 @@ public class ScrapeDataTest {
 		
 		// Get the JSON for testing
 		try {	
-			String json = classUnderTest.run(RunExample.SOURCE_URL);
+
+			List<Product> productList = classUnderTest.run(RunExample.SOURCE_URL);
+			// Return a JSON string
+			String json = JsonBuilder.convert(productList);
 						
 			// Test to see if required nodes are present
 			JsonParser jsonParser = new JsonParser();		
